@@ -1,0 +1,58 @@
+# ArgoCD Helm Chart Values
+
+# # Warning: You need at least 3 worker nodes as the HA mode of redis enforces Pods to run on separate nodes.
+# redis-ha:
+#   enabled: true
+
+controller:
+  replicas: 1
+
+server:
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+  extraArgs:
+    - --insecure
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchLabels:
+                app.kubernetes.io/component: server
+            topologyKey: kubernetes.io/hostname
+
+repoServer:
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchLabels:
+                app.kubernetes.io/component: repo-server
+            topologyKey: kubernetes.io/hostname
+
+applicationSet:
+  replicas: 2
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchLabels:
+                app.kubernetes.io/component: applicationset-controller
+            topologyKey: kubernetes.io/hostname
+
+
+# dex:
+#   enabled: true
+#   replicas: 2  # Missing if using Dex for auth
+
+
+
